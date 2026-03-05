@@ -584,7 +584,8 @@ async function spin() {
   hideWin();
   clearWinHighlights();
 
-  if (freeSpins > 0) {
+  const isFreeSpin = freeSpins > 0;
+  if (isFreeSpin) {
     freeSpins--;
     updateFreeSpinsDisplay();
   } else {
@@ -614,7 +615,7 @@ async function spin() {
   // Highlight wins
   if (winLines.length > 0) {
     highlightWins(winLines);
-    const actualWin = totalWin * (freeSpins > 0 ? FREE_SPINS_MULTIPLIER : 1);
+    const actualWin = totalWin * (isFreeSpin ? FREE_SPINS_MULTIPLIER : 1);
 
     if (actualWin > 0) {
       balance += actualWin;
@@ -717,11 +718,14 @@ function checkWins(grid, betPerLine) {
       }
     }
 
-    // Count consecutive matches from left
+    // Count consecutive matches from left (scatters are transparent on paylines)
     let count = 0;
+    const positions = [];
     for (let i = 0; i < lineSymbols.length; i++) {
+      if (lineSymbols[i].scatter) { positions.push({ reel: i, row: line[i] }); continue; }
       if (lineSymbols[i].id === matchSymbol.id || lineSymbols[i].wild) {
         count++;
+        positions.push({ reel: i, row: line[i] });
       } else {
         break;
       }
@@ -737,7 +741,7 @@ function checkWins(grid, betPerLine) {
 
       if (lineWin > 0) {
         totalWin += lineWin;
-        winLines.push({ lineIdx, count, positions: line.slice(0, count).map((row, reel) => ({ reel, row })) });
+        winLines.push({ lineIdx, count, positions });
       }
     }
   }
