@@ -104,14 +104,18 @@ body{
 
 .reel-strip{
   display:flex;flex-direction:column;
-  transition:transform 0s;
   will-change:transform;
 }
 .reel-strip.spinning{
-  transition:none;
+  animation:reelSpin .25s linear infinite;
 }
 .reel-strip.stopping{
-  transition:transform .6s cubic-bezier(0.15,0.8,0.3,1.02);
+  animation:none;
+  transition:transform .5s cubic-bezier(0.15,0.8,0.3,1.05);
+}
+@keyframes reelSpin{
+  0%{transform:translateY(0)}
+  100%{transform:translateY(-2400px)}
 }
 .symbol-cell{
   width:100%;height:80px;
@@ -537,56 +541,35 @@ async function spin() {
 }
 
 async function animateReels(results) {
-  const promises = [];
-
+  // Start all reels spinning (CSS animation, GPU-accelerated)
   for (let r = 0; r < NUM_REELS; r++) {
-    promises.push(new Promise(resolve => {
-      const stripEl = document.getElementById(`reel-strip-${r}`);
-      const symbolHeight = 80;
-      const totalSpinDistance = (reelStrips[r].length - NUM_ROWS) * symbolHeight;
-      const stopY = -(results[r].stopPos * symbolHeight);
-
-      // Start spinning animation
-      stripEl.classList.remove('stopping');
-      stripEl.classList.add('spinning');
-
-      let startTime = null;
-      const spinDuration = 600 + r * 250; // staggered stops
-      const spinSpeed = 15; // pixels per frame
-
-      let currentY = parseFloat(stripEl.style.transform.replace(/[^-\d.]/g, '')) || 0;
-
-      function animateFrame(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const elapsed = timestamp - startTime;
-
-        if (elapsed < spinDuration - 300) {
-          // Spinning phase - fast continuous loop
-          currentY -= spinSpeed;
-          if (currentY < -totalSpinDistance) currentY = 0;
-          stripEl.style.transform = `translateY(${currentY}px)`;
-          requestAnimationFrame(animateFrame);
-        } else if (elapsed < spinDuration) {
-          // Slowing down
-          const slowFactor = 1 - ((elapsed - (spinDuration - 300)) / 300);
-          currentY -= spinSpeed * slowFactor;
-          if (currentY < -totalSpinDistance) currentY = 0;
-          stripEl.style.transform = `translateY(${currentY}px)`;
-          requestAnimationFrame(animateFrame);
-        } else {
-          // Snap to final position
-          stripEl.classList.remove('spinning');
-          stripEl.classList.add('stopping');
-          stripEl.style.transform = `translateY(${stopY}px)`;
-          playSound('stop');
-          setTimeout(resolve, 300);
-        }
-      }
-      requestAnimationFrame(animateFrame);
-    }));
+    const stripEl = document.getElementById(`reel-strip-${r}`);
+    stripEl.classList.remove('stopping');
+    stripEl.style.transform = '';
+    // Force reflow so animation restarts cleanly
+    void stripEl.offsetHeight;
+    stripEl.classList.add('spinning');
   }
 
-  await Promise.all(promises);
+  // Stop reels one by one with staggered timing
+  for (let r = 0; r < NUM_REELS; r++) {
+    await new Promise(resolve => {
+      setTimeout(() => {
+        const stripEl = document.getElementById(`reel-strip-${r}`);
+        const stopY = -(results[r].stopPos * 80);
+        stripEl.classList.remove('spinning');
+        // Force reflow between removing animation and adding transition
+        void stripEl.offsetHeight;
+        stripEl.classList.add('stopping');
+        stripEl.style.transform = `translateY(${stopY}px)`;
+        playSound('stop');
+        resolve();
+      }, 400 + r * 200);
+    });
+  }
+
+  // Wait for the last reel's transition to finish
+  await new Promise(resolve => setTimeout(resolve, 500));
 }
 
 function checkWins(grid, bet) {
