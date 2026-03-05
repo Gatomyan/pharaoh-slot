@@ -697,51 +697,68 @@ function checkWins(grid, betPerLine) {
     }
   }
 
-  // Check only active paylines
+  // Check only active paylines — find best consecutive run anywhere on line
   for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
     const line = PAYLINES[lineIdx];
     const lineSymbols = line.map((row, reel) => grid[reel][row]);
 
-    // Find first non-wild symbol
-    let matchSymbol = null;
-    for (let i = 0; i < lineSymbols.length; i++) {
-      if (!lineSymbols[i].wild && !lineSymbols[i].scatter) {
-        matchSymbol = lineSymbols[i];
-        break;
+    let bestPay = 0;
+    let bestPositions = [];
+    let bestCount = 0;
+    let bestSymbol = null;
+
+    // Try starting from each position
+    for (let start = 0; start <= lineSymbols.length - 3; start++) {
+      // Skip scatters as starting point
+      if (lineSymbols[start].scatter) continue;
+
+      // Determine match symbol (use first non-wild from this position)
+      let matchSym = null;
+      for (let i = start; i < lineSymbols.length; i++) {
+        if (!lineSymbols[i].wild && !lineSymbols[i].scatter) {
+          matchSym = lineSymbols[i];
+          break;
+        }
+      }
+      if (!matchSym) {
+        if (lineSymbols.slice(start).every(s => s.wild || s.scatter)) {
+          matchSym = SYMBOLS[0]; // all wilds
+        } else { continue; }
+      }
+
+      // Count consecutive matches from this start (scatters transparent)
+      let count = 0;
+      const pos = [];
+      for (let i = start; i < lineSymbols.length; i++) {
+        if (lineSymbols[i].scatter) { pos.push({ reel: i, row: line[i] }); continue; }
+        if (lineSymbols[i].id === matchSym.id || lineSymbols[i].wild) {
+          count++;
+          pos.push({ reel: i, row: line[i] });
+        } else {
+          break;
+        }
+      }
+
+      if (count >= 3) {
+        let pay = 0;
+        if (count === 3) pay = matchSym.pay3;
+        else if (count === 4) pay = matchSym.pay4;
+        else if (count >= 5) pay = matchSym.pay5;
+
+        if (pay > bestPay) {
+          bestPay = pay;
+          bestPositions = pos;
+          bestCount = count;
+          bestSymbol = matchSym;
+        }
       }
     }
-    if (!matchSymbol) {
-      if (lineSymbols.every(s => s.wild)) {
-        matchSymbol = SYMBOLS[0];
-      } else {
-        continue;
-      }
-    }
 
-    // Count consecutive matches from left (scatters are transparent on paylines)
-    let count = 0;
-    const positions = [];
-    for (let i = 0; i < lineSymbols.length; i++) {
-      if (lineSymbols[i].scatter) { positions.push({ reel: i, row: line[i] }); continue; }
-      if (lineSymbols[i].id === matchSymbol.id || lineSymbols[i].wild) {
-        count++;
-        positions.push({ reel: i, row: line[i] });
-      } else {
-        break;
-      }
-    }
-
-    if (count >= 3) {
-      let pay = 0;
-      if (count === 3) pay = matchSymbol.pay3;
-      else if (count === 4) pay = matchSymbol.pay4;
-      else if (count >= 5) pay = matchSymbol.pay5;
-
-      const lineWin = Math.round(pay * betPerLine);
-
+    if (bestPay > 0) {
+      const lineWin = Math.round(bestPay * betPerLine);
       if (lineWin > 0) {
         totalWin += lineWin;
-        winLines.push({ lineIdx, count, positions });
+        winLines.push({ lineIdx, count: bestCount, positions: bestPositions });
       }
     }
   }
