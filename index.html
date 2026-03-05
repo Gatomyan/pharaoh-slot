@@ -796,6 +796,45 @@ function highlightWins(winLines) {
   });
 }
 
+function showPaylines() {
+  const overlay = document.getElementById('paylines-overlay');
+  overlay.querySelectorAll('.payline-preview').forEach(el => el.remove());
+  const reelHeight = document.querySelector('.reel')?.offsetHeight || (getCellH() * 3);
+  const cellHeight = reelHeight / NUM_ROWS;
+  const containerWidth = document.getElementById('reels-container').offsetWidth - 20;
+  const reelWidth = containerWidth / NUM_REELS;
+
+  for (let i = 0; i < numLines; i++) {
+    const line = PAYLINES[i];
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.style.cssText = 'position:absolute;top:10px;left:10px;right:10px;bottom:10px;pointer-events:none;';
+    svg.classList.add('payline-preview');
+
+    const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    const points = line.map((row, r) => `${(r + 0.5) * reelWidth},${(row + 0.5) * cellHeight}`).join(' ');
+    polyline.setAttribute('points', points);
+    polyline.setAttribute('fill', 'none');
+    polyline.setAttribute('stroke', PAYLINE_COLORS[i]);
+    polyline.setAttribute('stroke-width', '2');
+    polyline.setAttribute('stroke-opacity', '0.6');
+    polyline.setAttribute('stroke-linecap', 'round');
+    polyline.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(polyline);
+    overlay.appendChild(svg);
+  }
+
+  clearTimeout(showPaylines._timer);
+  showPaylines._timer = setTimeout(() => {
+    overlay.querySelectorAll('.payline-preview').forEach(el => {
+      el.style.transition = 'opacity 0.5s';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 500);
+    });
+  }, 1500);
+}
+
 function clearWinHighlights() {
   document.querySelectorAll('.symbol-cell.winner').forEach(el => el.classList.remove('winner'));
   document.querySelectorAll('.payline-svg').forEach(el => el.remove());
@@ -808,16 +847,13 @@ function updateBalance() {
 
 function updateBet() {
   document.getElementById('bet-value').textContent = BET_LEVELS[betIndex];
-  updateTotalBet();
+  document.getElementById('total-bet').textContent = 'Всего: ' + (BET_LEVELS[betIndex] * numLines);
 }
 
 function updateLines() {
   document.getElementById('line-value').textContent = numLines;
-  updateTotalBet();
-}
-
-function updateTotalBet() {
-  document.getElementById('total-bet').textContent = 'Всего: ' + (BET_LEVELS[betIndex] * numLines);
+  updateBet();
+  showPaylines();
 }
 
 function showWin(text, big) {
