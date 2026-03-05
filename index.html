@@ -10,6 +10,7 @@
   --gold:#d4a017;--gold-light:#f0d060;--gold-dark:#a07010;
   --bg:#0a0a1a;--bg-card:#111128;--bg-reel:#0d0d20;
   --text:#e8d5a3;--accent:#ff6b35;
+  --cell-h:80px;
 }
 @font-face{font-family:'SlotFont';src:local('Segoe UI'),local('Helvetica Neue'),local('Arial')}
 body{
@@ -52,17 +53,43 @@ body{
 .balance-bar .label{font-size:.7rem;color:var(--gold-dark);text-transform:uppercase;letter-spacing:2px}
 .balance-bar .value{font-size:1.5rem;font-weight:900;color:var(--gold-light)}
 .balance-bar .coins-icon{font-size:1.2rem}
-.bonus-btn{
-  padding:6px 16px;border-radius:6px;
-  border:1px solid var(--accent);background:rgba(255,107,53,0.15);
-  color:var(--accent);font-size:.75rem;font-weight:700;
-  cursor:pointer;text-transform:uppercase;letter-spacing:1px;
-  transition:all .2s;display:none;
-  animation:bonusPulse 1.5s ease-in-out infinite;
+/* Line selector */
+.line-control{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(212,160,23,0.08);border:1px solid rgba(212,160,23,0.2);
+  border-radius:8px;padding:6px 12px;
 }
-.bonus-btn:hover{background:rgba(255,107,53,0.3);transform:scale(1.05)}
-.bonus-btn.show{display:block}
-@keyframes bonusPulse{0%,100%{box-shadow:0 0 5px rgba(255,107,53,0.3)}50%{box-shadow:0 0 15px rgba(255,107,53,0.6)}}
+.line-control .label{font-size:.65rem;color:var(--gold-dark);text-transform:uppercase;letter-spacing:1px}
+.line-control .line-value{font-size:1.1rem;font-weight:700;color:var(--gold-light);min-width:30px;text-align:center}
+.total-bet{font-size:.6rem;color:var(--gold-dark);text-align:center;margin-top:2px}
+
+/* Promo code */
+.promo-btn{
+  padding:6px 14px;border-radius:6px;border:1px solid rgba(212,160,23,0.2);
+  background:transparent;color:var(--gold-dark);font-size:.7rem;
+  cursor:pointer;text-transform:uppercase;letter-spacing:1px;
+  transition:all .15s;
+}
+.promo-btn:hover{border-color:var(--gold);color:var(--gold)}
+.promo-modal .modal{max-width:380px}
+.promo-input{
+  width:100%;padding:10px;border-radius:8px;border:1px solid rgba(212,160,23,0.3);
+  background:rgba(0,0,0,0.3);color:var(--gold-light);font-size:1rem;
+  text-align:center;letter-spacing:3px;text-transform:uppercase;
+  outline:none;margin-bottom:10px;font-family:inherit;
+}
+.promo-input:focus{border-color:var(--gold)}
+.promo-activate{
+  width:100%;padding:10px;border-radius:8px;border:2px solid var(--gold);
+  background:linear-gradient(180deg,#2a1a00,#1a0a00);
+  color:var(--gold-light);font-size:.9rem;font-weight:700;
+  cursor:pointer;text-transform:uppercase;letter-spacing:2px;
+  transition:all .2s;font-family:inherit;
+}
+.promo-activate:hover{background:linear-gradient(180deg,#3a2a10,#2a1a00);border-color:var(--gold-light)}
+.promo-msg{text-align:center;margin-top:10px;font-size:.85rem;min-height:1.2em}
+.promo-msg.success{color:#44ff44}
+.promo-msg.error{color:#ff4444}
 
 /* Reel area */
 .reel-frame{
@@ -93,12 +120,12 @@ body{
   background:linear-gradient(90deg,transparent,rgba(212,160,23,0.25),transparent);
   z-index:3;pointer-events:none;
 }
-.reels-container::before{top:calc(10px + 80px)}
-.reels-container::after{top:calc(10px + 160px)}
+.reels-container::before{top:calc(10px + var(--cell-h))}
+.reels-container::after{top:calc(10px + var(--cell-h) * 2)}
 .reel{
   display:flex;flex-direction:column;overflow:hidden;
   border-radius:6px;background:rgba(0,0,0,0.3);
-  height:240px;position:relative;
+  height:calc(var(--cell-h) * 3);position:relative;
   border:1px solid rgba(212,160,23,0.1);
 }
 
@@ -115,10 +142,10 @@ body{
 }
 @keyframes reelSpin{
   0%{transform:translateY(0)}
-  100%{transform:translateY(-2400px)}
+  100%{transform:translateY(var(--spin-dist,-2400px))}
 }
 .symbol-cell{
-  width:100%;height:80px;
+  width:100%;height:var(--cell-h);
   display:flex;align-items:center;justify-content:center;
   font-size:clamp(2rem,8vw,3rem);
   flex-shrink:0;
@@ -255,12 +282,59 @@ body{
 .pay-section h3{font-size:.85rem;color:var(--gold);margin-bottom:6px}
 .pay-section p{font-size:.75rem;color:var(--gold-dark);line-height:1.5}
 
-/* Responsive */
+/* Portrait phones */
 @media(max-width:480px){
-  .symbol-cell{font-size:2rem}
-  .spin-btn{width:65px;height:65px;font-size:.7rem}
-  .controls{gap:10px}
+  :root{--cell-h:70px}
+  .game-container{gap:4px;padding:5px}
+  .header{padding:8px 15px}
+  .header .subtitle{font-size:.6rem;letter-spacing:4px}
+  .balance-bar{padding:5px 10px}
   .balance-bar .value{font-size:1.2rem}
+  .reels-container{padding:8px}
+  .reels-container::before{top:calc(8px + var(--cell-h))}
+  .reels-container::after{top:calc(8px + var(--cell-h) * 2)}
+  .symbol-cell{font-size:2rem}
+  .win-display{min-height:28px}
+  .win-text{font-size:1.3rem}
+  .controls{gap:8px;padding:3px 5px}
+  .bet-btn{width:28px;height:28px;font-size:1rem}
+  .spin-btn{width:58px;height:58px;font-size:.65rem}
+  .auto-spin-btn{padding:4px 10px;font-size:.6rem}
+  .bet-control,.line-control{padding:4px 8px}
+  .bet-control .label,.line-control .label{font-size:.55rem}
+  .bet-control .bet-value{font-size:.9rem;min-width:35px}
+  .line-control .line-value{font-size:.9rem;min-width:20px}
+}
+/* Landscape phones */
+@media(max-height:450px) and (orientation:landscape){
+  :root{--cell-h:42px}
+  .game-container{gap:2px;padding:3px}
+  .header{padding:2px 10px}
+  .header h1{font-size:1rem;letter-spacing:1px}
+  .header .subtitle{display:none}
+  .balance-bar{padding:2px 10px;gap:8px}
+  .balance-bar .value{font-size:.9rem}
+  .balance-bar .label{font-size:.5rem}
+  .balance-bar .coins-icon{font-size:.8rem}
+  .reel-frame{border-width:2px}
+  .reels-container{padding:4px;gap:2px}
+  .reels-container::before{top:calc(4px + var(--cell-h))}
+  .reels-container::after{top:calc(4px + var(--cell-h) * 2)}
+  .symbol-cell{font-size:1.4rem}
+  .win-display{min-height:16px}
+  .win-text{font-size:.9rem}
+  .controls{gap:5px;padding:2px 5px}
+  .bet-control,.line-control{padding:2px 6px}
+  .bet-control .label,.line-control .label{font-size:.45rem}
+  .bet-control .bet-value{font-size:.75rem;min-width:25px}
+  .line-control .line-value{font-size:.75rem;min-width:16px}
+  .bet-btn{width:22px;height:22px;font-size:.8rem;border-width:1px}
+  .spin-btn{width:42px;height:42px;font-size:.5rem;border-width:2px}
+  .spin-btn::before{inset:2px}
+  .auto-spin-btn{padding:2px 6px;font-size:.5rem}
+  .bottom-bar{padding:1px 5px;font-size:.55rem}
+  .paytable-btn,.promo-btn{padding:2px 6px;font-size:.5rem}
+  .total-bet{font-size:.5rem}
 }
 </style>
 </head>
@@ -278,7 +352,6 @@ body{
       <div class="label">Баланс</div>
       <div class="value" id="balance">10,000</div>
     </div>
-    <button class="bonus-btn" id="bonus-btn">Бонус 5 000</button>
   </div>
 
   <div class="reel-frame">
@@ -291,11 +364,18 @@ body{
   </div>
 
   <div class="controls">
+    <div class="line-control">
+      <div class="label">Линии</div>
+      <button class="bet-btn" id="line-down">−</button>
+      <div class="line-value" id="line-value">5</div>
+      <button class="bet-btn" id="line-up">+</button>
+    </div>
     <div class="bet-control">
       <div class="label">Ставка</div>
       <button class="bet-btn" id="bet-down">−</button>
       <div class="bet-value" id="bet-value">50</div>
       <button class="bet-btn" id="bet-up">+</button>
+      <div class="total-bet" id="total-bet">Всего: 250</div>
     </div>
     <button class="spin-btn" id="spin-btn">КРУТИ</button>
     <button class="auto-spin-btn" id="auto-spin-btn">Авто</button>
@@ -304,7 +384,7 @@ body{
   <div class="bottom-bar">
     <button class="paytable-btn" id="paytable-btn">Таблица выплат</button>
     <div id="free-spins-display"></div>
-    <div id="lines-display">5 Линий</div>
+    <button class="promo-btn" id="promo-btn">Промокод</button>
   </div>
 </div>
 
@@ -313,6 +393,16 @@ body{
     <button class="modal-close" id="modal-close">&times;</button>
     <h2>Таблица выплат</h2>
     <div id="paytable-content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay promo-modal" id="promo-modal">
+  <div class="modal">
+    <button class="modal-close" id="promo-close">&times;</button>
+    <h2>Промокод</h2>
+    <input class="promo-input" id="promo-input" type="text" maxlength="8" placeholder="ВВЕДИТЕ КОД" autocomplete="off">
+    <button class="promo-activate" id="promo-activate">Активировать</button>
+    <div class="promo-msg" id="promo-msg"></div>
   </div>
 </div>
 
@@ -347,12 +437,33 @@ const FREE_SPINS_MULTIPLIER = 2;
 
 let balance = parseInt(localStorage.getItem('pharaoh_balance')) || 10000;
 let betIndex = 2;
+let numLines = 5;
 let spinning = false;
 let autoSpin = false;
 let freeSpins = 0;
 let reelStrips = [];
 let finalGrid = [];
 let audioCtx = null;
+
+const PROMO_CODES = {
+  'X7KM2PQR':5000,'TN4WJLB8':3000,'QF9AHD6V':2000,'RW3YCZ5E':10000,
+  'B2MK8GNP':1500,'V6TXJR4A':4000,'HD9WQ3FL':2500,'ZC7NAE2K':7000,
+  'PJ5LX8YT':1000,'GR4BM6WN':3500,'K8FV2HDQ':6000,'YA3WNLJ7':2000,
+  'M5TC9PRX':8000,'LN6KJQ4B':1500,'W2GAD8FZ':4500,'E7XMRV3H':3000,
+  'J4PYB9TK':5500,'FQ8LNW2C':2000,'D6AHJ5ZR':7500,'XK3TVG9M':4000,
+  'N8RWP4LE':6000,'C2FBY7QJ':3500,'H5MKDX3A':1000,'Z9TNV6GW':5000,
+  'A4LJRC8P':2500,'W7QKF2YB':9000,'R3XGME5N':1500,'P6VJH9DT':4000,
+  'T8NKA4WL':3000,'G2CBXR7F':7000,'L5QJY3MH':2000,'V9WDPK6E':5500,
+  'F3ARNT8Z':1000,'B7GXLM4J':6500,'Y2HCWQ9K':8500,'N6PTVA3D':3000,
+  'K4JRXF7L':4500,'Q8MWBE2G':2000,'X5YDNH3T':7500,'J9CKVP4A':1500,
+  'D3FWLR6Z':5000,'H7TNQX2M':3500,'A9BGJK5V':2500,'E4YMPC8W':6000,
+  'Z6RDNA3F':4000,'M2KXVH7Q':9500,'P8WJLG4T':1000,'R5NBTY9C':3000,
+  'G3AFKQ6X':8000,'L7MVDJ2E':5500
+};
+
+function getCellH() {
+  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-h'));
+}
 
 // Build weighted reel strips
 function buildReelStrip() {
@@ -459,8 +570,9 @@ async function spin() {
   if (spinning) return;
   initAudio();
 
-  const bet = BET_LEVELS[betIndex];
-  if (freeSpins <= 0 && balance < bet) {
+  const betPerLine = BET_LEVELS[betIndex];
+  const totalBet = betPerLine * numLines;
+  if (freeSpins <= 0 && balance < totalBet) {
     showWin('Недостаточно монет!', false);
     autoSpin = false;
     updateAutoBtn();
@@ -476,7 +588,7 @@ async function spin() {
     freeSpins--;
     updateFreeSpinsDisplay();
   } else {
-    balance -= bet;
+    balance -= totalBet;
     updateBalance();
   }
 
@@ -497,18 +609,17 @@ async function spin() {
   finalGrid = results.map(r => r.symbols);
 
   // Check wins
-  const { totalWin, winLines, scatterCount } = checkWins(finalGrid, bet);
+  const { totalWin, winLines, scatterCount } = checkWins(finalGrid, betPerLine);
 
   // Highlight wins
   if (winLines.length > 0) {
     highlightWins(winLines);
-    const multiplier = freeSpins > 0 || (freeSpins === 0 && scatterCount >= FREE_SPINS_TRIGGER) ? 1 : 1;
     const actualWin = totalWin * (freeSpins > 0 ? FREE_SPINS_MULTIPLIER : 1);
 
     if (actualWin > 0) {
       balance += actualWin;
       updateBalance();
-      if (actualWin >= bet * 20) {
+      if (actualWin >= totalBet * 20) {
         playSound('bigwin');
         showWin(`МЕГА ВЫИГРЫШ! ${actualWin.toLocaleString()}`, true);
       } else {
@@ -541,12 +652,15 @@ async function spin() {
 }
 
 async function animateReels(results) {
+  const cellH = getCellH();
+  const spinDist = REEL_SYMBOLS * cellH;
+
   // Start all reels spinning (CSS animation, GPU-accelerated)
   for (let r = 0; r < NUM_REELS; r++) {
     const stripEl = document.getElementById(`reel-strip-${r}`);
     stripEl.classList.remove('stopping');
     stripEl.style.transform = '';
-    // Force reflow so animation restarts cleanly
+    stripEl.style.setProperty('--spin-dist', `-${spinDist}px`);
     void stripEl.offsetHeight;
     stripEl.classList.add('spinning');
   }
@@ -556,9 +670,8 @@ async function animateReels(results) {
     await new Promise(resolve => {
       setTimeout(() => {
         const stripEl = document.getElementById(`reel-strip-${r}`);
-        const stopY = -(results[r].stopPos * 80);
+        const stopY = -(results[r].stopPos * cellH);
         stripEl.classList.remove('spinning');
-        // Force reflow between removing animation and adding transition
         void stripEl.offsetHeight;
         stripEl.classList.add('stopping');
         stripEl.style.transform = `translateY(${stopY}px)`;
@@ -568,11 +681,10 @@ async function animateReels(results) {
     });
   }
 
-  // Wait for the last reel's transition to finish
   await new Promise(resolve => setTimeout(resolve, 500));
 }
 
-function checkWins(grid, bet) {
+function checkWins(grid, betPerLine) {
   let totalWin = 0;
   const winLines = [];
   let scatterCount = 0;
@@ -584,8 +696,9 @@ function checkWins(grid, bet) {
     }
   }
 
-  // Check each payline
-  PAYLINES.forEach((line, lineIdx) => {
+  // Check only active paylines
+  for (let lineIdx = 0; lineIdx < numLines; lineIdx++) {
+    const line = PAYLINES[lineIdx];
     const lineSymbols = line.map((row, reel) => grid[reel][row]);
 
     // Find first non-wild symbol
@@ -597,11 +710,10 @@ function checkWins(grid, bet) {
       }
     }
     if (!matchSymbol) {
-      // All wilds
       if (lineSymbols.every(s => s.wild)) {
-        matchSymbol = SYMBOLS[0]; // pharaoh pays
+        matchSymbol = SYMBOLS[0];
       } else {
-        return;
+        continue;
       }
     }
 
@@ -621,15 +733,14 @@ function checkWins(grid, bet) {
       else if (count === 4) pay = matchSymbol.pay4;
       else if (count >= 5) pay = matchSymbol.pay5;
 
-      const lineBet = bet / PAYLINES.length;
-      const lineWin = Math.round(pay * lineBet);
+      const lineWin = Math.round(pay * betPerLine);
 
       if (lineWin > 0) {
         totalWin += lineWin;
         winLines.push({ lineIdx, count, positions: line.slice(0, count).map((row, reel) => ({ reel, row })) });
       }
     }
-  });
+  }
 
   return { totalWin, winLines, scatterCount };
 }
@@ -641,7 +752,7 @@ function highlightWins(winLines) {
       const stripEl = document.getElementById(`reel-strip-${pos.reel}`);
       const cells = stripEl.querySelectorAll('.symbol-cell');
       const finalPos = parseFloat(stripEl.style.transform.replace(/[^-\d.]/g, '')) || 0;
-      const visibleStart = Math.round(Math.abs(finalPos) / 80);
+      const visibleStart = Math.round(Math.abs(finalPos) / getCellH());
       const cell = cells[visibleStart + pos.row];
       if (cell) cell.classList.add('winner');
     });
@@ -693,12 +804,20 @@ function clearWinHighlights() {
 // UI updates
 function updateBalance() {
   document.getElementById('balance').textContent = balance.toLocaleString();
-  const bonusBtn = document.getElementById('bonus-btn');
-  bonusBtn.classList.toggle('show', balance < BET_LEVELS[0]);
 }
 
 function updateBet() {
   document.getElementById('bet-value').textContent = BET_LEVELS[betIndex];
+  updateTotalBet();
+}
+
+function updateLines() {
+  document.getElementById('line-value').textContent = numLines;
+  updateTotalBet();
+}
+
+function updateTotalBet() {
+  document.getElementById('total-bet').textContent = 'Всего: ' + (BET_LEVELS[betIndex] * numLines);
 }
 
 function showWin(text, big) {
@@ -786,12 +905,16 @@ document.getElementById('auto-spin-btn').addEventListener('click', () => {
   if (autoSpin && !spinning) spin();
 });
 
-document.getElementById('bonus-btn').addEventListener('click', () => {
-  balance += 5000;
-  updateBalance();
-  localStorage.setItem('pharaoh_balance', balance);
-  playSound('win');
-  showWin('+5 000!', true);
+document.getElementById('line-down').addEventListener('click', () => {
+  if (spinning) return;
+  numLines = Math.max(1, numLines - 1);
+  updateLines();
+});
+
+document.getElementById('line-up').addEventListener('click', () => {
+  if (spinning) return;
+  numLines = Math.min(PAYLINES.length, numLines + 1);
+  updateLines();
 });
 
 document.getElementById('paytable-btn').addEventListener('click', () => {
@@ -806,6 +929,65 @@ document.getElementById('paytable-modal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
 });
 
+// Promo code
+document.getElementById('promo-btn').addEventListener('click', () => {
+  document.getElementById('promo-modal').classList.add('show');
+  document.getElementById('promo-input').value = '';
+  document.getElementById('promo-msg').textContent = '';
+  document.getElementById('promo-input').focus();
+});
+
+document.getElementById('promo-close').addEventListener('click', () => {
+  document.getElementById('promo-modal').classList.remove('show');
+});
+
+document.getElementById('promo-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+});
+
+document.getElementById('promo-activate').addEventListener('click', activatePromo);
+document.getElementById('promo-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') activatePromo();
+});
+
+function activatePromo() {
+  const input = document.getElementById('promo-input');
+  const msg = document.getElementById('promo-msg');
+  const code = input.value.trim().toUpperCase();
+
+  if (!code) {
+    msg.textContent = 'Введите промокод';
+    msg.className = 'promo-msg error';
+    return;
+  }
+
+  const usedCodes = JSON.parse(localStorage.getItem('pharaoh_used_codes') || '[]');
+
+  if (usedCodes.includes(code)) {
+    msg.textContent = 'Этот код уже использован';
+    msg.className = 'promo-msg error';
+    return;
+  }
+
+  if (!PROMO_CODES[code]) {
+    msg.textContent = 'Неверный промокод';
+    msg.className = 'promo-msg error';
+    return;
+  }
+
+  const amount = PROMO_CODES[code];
+  balance += amount;
+  updateBalance();
+  localStorage.setItem('pharaoh_balance', balance);
+  usedCodes.push(code);
+  localStorage.setItem('pharaoh_used_codes', JSON.stringify(usedCodes));
+
+  msg.textContent = `+${amount.toLocaleString()} монет!`;
+  msg.className = 'promo-msg success';
+  input.value = '';
+  playSound('win');
+}
+
 // Keyboard: space to spin
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && !e.repeat) { e.preventDefault(); spin(); }
@@ -815,6 +997,7 @@ document.addEventListener('keydown', (e) => {
 initReels();
 updateBalance();
 updateBet();
+updateLines();
 buildPaytable();
 updateFreeSpinsDisplay();
 </script>
